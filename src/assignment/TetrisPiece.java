@@ -46,6 +46,7 @@ public final class TetrisPiece extends Piece {
 		templates.put(new HashSet<Point>(Arrays.asList(Piece.parsePoints(pieceStrings[6]))),
 				TetrisType.T);
 	}
+	
 	public static void createCircularLL(TetrisPiece head) {
 		
 	}
@@ -85,12 +86,14 @@ public final class TetrisPiece extends Piece {
 		rotations = new ArrayList<TetrisPiece>();
 		rotations.add(this);
 		next = new TetrisPiece(this, index+1, rotations);
+		
 		calcType();		
 	}
 	public void calcType() {
 		int ind = 0;
 		boolean done = false;
 		TetrisType typeVar  = TetrisType.OTHER;
+		
 		while(!done && ind<rotations.size()) {
 			TetrisPiece t = rotations.get(ind);
 			for(Set<Point> template : TetrisPiece.templates.keySet()) {
@@ -101,6 +104,7 @@ public final class TetrisPiece extends Piece {
 			}
 			ind++;
 		}
+		
 		for(TetrisPiece t : rotations) {
 			t.setType(typeVar);
 		}
