@@ -46,8 +46,90 @@ public final class TetrisPiece extends Piece {
 		templates.put(new HashSet<Point>(Arrays.asList(Piece.parsePoints(pieceStrings[6]))),
 				TetrisType.T);
 	}
-	public static void createCircularLL(TetrisPiece head) {
+	public static void createCircularLL(TetrisPiece t1) {
+		TetrisPiece t2 = new TetrisPiece(rotate(t1.getBody()));
+		TetrisPiece t3 = new TetrisPiece(rotate(t2.getBody()));
+		TetrisPiece t4 = new TetrisPiece(rotate(t3.getBody()));
+		t1.next = t2;
+		t2.next = t3;
+		t3.next = t4;
+		t4.next = t1;
 		
+		
+		TetrisPiece tNext = t1;
+		boolean done = false;
+		TetrisType typeVar  = TetrisType.OTHER;
+		do {
+			for(Set<Point> template : TetrisPiece.templates.keySet()) {
+				if (tNext.bodyEquals(template)) {
+					done = true;
+					typeVar = TetrisPiece.templates.get(template);
+				}
+			}
+			if (!done)
+				tNext = (TetrisPiece) tNext.next;
+		}while (!done && tNext!=t1);
+		
+		if (done) {
+			TetrisPiece head = tNext;
+			Pivot center = new Pivot(0,0);
+			switch (typeVar) {
+				case STICK:
+					center = new Pivot(1.5, 0.5);
+					break;
+				case J:
+					center = new Pivot(1, 1);
+					break;
+				case L:
+					center = new Pivot(1, 1);
+					break;
+				case DUCKRIGHT:
+					center = new Pivot(1, 1);
+					break;
+				case DUCKLEFT:
+					center = new Pivot(1, 1);
+					break;
+				case SQUARE:
+					center = new Pivot(0.5, 0.5);
+					break;
+				case T:
+					center = new Pivot(1, 1);
+					break;				
+			}
+			do {
+				Pivot temp = new Pivot(0,0);
+				temp.x = center.x >= 0 ? center.x : center.x + tNext.width - 1;
+				temp.y = center.y >= 0 ? center.y : center.y + tNext.height - 1;		
+				tNext.center = temp;
+				rotate(center);
+				tNext = (TetrisPiece) tNext.next;
+			} while (tNext!=head);
+		}
+		else
+			System.out.println("AAAAAAAAAA!!!!!!! u fucked up!!!!!");
+	}
+	public static Point[] rotate(Point[] input) {
+		Point[] result = new Point[input.length];
+		int minx = Integer.MAX_VALUE;
+		int miny = Integer.MAX_VALUE;
+		for (int i=0; i<input.length; i++) {
+			Point p = input[i];
+			int x = - p.y;
+			int y =  p.x;
+			minx = Math.min(minx, x);
+			miny = Math.min(miny, y);
+			result[i] = new Point(x, y);  
+		}
+		for (Point p : result) {
+			p.setLocation(p.x - minx, p.y - miny);
+		}
+		return result;
+	}
+	public static void rotate(Pivot center) {
+		double x = - center.y;
+		double y = center.x;
+		center.x = x;
+		center.y = y;
 	}
 	
 	TetrisType type;
@@ -56,56 +138,19 @@ public final class TetrisPiece extends Piece {
 	private int width;
 	private Point[] body;
 	private int[] skirt;
-	private int index;
 	private ArrayList<TetrisPiece> rotations;
 	
 	public TetrisPiece(Point[] points) {
 		body = points;
-		calcHeight();
-		calcWidth();
-		calcSkirt();
-	}
-	
-	public TetrisPiece(TetrisPiece orig, int rotationNum, ArrayList<TetrisPiece> rotations) {
-		//	body = rotate(orig, rotationNum);
-		calcHeight();
-		calcWidth();
-		calcSkirt();
-		
-		index = rotationNum;
-		rotations.add(this);
-		if (index == 3)
-			next = orig;
-		else
-			next = new TetrisPiece(orig, rotationNum+1, rotations);
-	}
-	
-	public void calcRotations() {
-		index = 0;
-		rotations = new ArrayList<TetrisPiece>();
-		rotations.add(this);
-		next = new TetrisPiece(this, index+1, rotations);
-		calcType();		
-	}
-	public void calcType() {
-		int ind = 0;
-		boolean done = false;
-		TetrisType typeVar  = TetrisType.OTHER;
-		while(!done && ind<rotations.size()) {
-			TetrisPiece t = rotations.get(ind);
-			for(Set<Point> template : TetrisPiece.templates.keySet()) {
-				if (t.bodyEquals(template)) {
-					done = true;
-					typeVar = TetrisPiece.templates.get(template);
-				}
-			}
-			ind++;
+		int maxX = Integer.MIN_VALUE;
+		int maxY = Integer.MIN_VALUE;
+		for (Point p : body) {
+			maxX = Math.max(maxX, p.x);
+			maxY = Math.max(maxY, p.y);
 		}
-		for(TetrisPiece t : rotations) {
-			t.setType(typeVar);
-		}
-
-		System.out.println(type);
+		width = maxX + 1;
+		height = maxY + 1;
+		calcSkirt(width);
 	}
 
 	/**
@@ -150,16 +195,12 @@ public final class TetrisPiece extends Piece {
     	return new HashSet<Point>(Arrays.asList(body)).equals(other);
     }
     
-    private int calcHeight() {
-    	return 0;
-    }
-    
-    private int calcWidth() {
-    	return 0;
-    }
-    
-    private int[] calcSkirt() {
-    	return null;
+    private void calcSkirt(int width) {
+    	skirt = new int[width];
+    	Arrays.fill(skirt, Integer.MAX_VALUE);
+    	for(Point p : body) {
+    		skirt[p.x] = Math.min(skirt[p.x], p.y);
+    	}
     }
     public String toString() {
     	return Arrays.toString(body);
