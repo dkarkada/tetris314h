@@ -74,8 +74,7 @@ public abstract class Piece {
             throw new RuntimeException("Could not parse x,y string:" + string);
         }
 
-        Point[] array = new Point[0];
-        array = points.toArray(array);
+        Point[] array = points.toArray(new Point[0]);
         return array;
     }
 }
