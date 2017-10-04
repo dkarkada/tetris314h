@@ -8,9 +8,12 @@ import java.awt.*;
  * pixels. Instead, just represents the abstract 2-d board.
  */
 public final class TetrisBoard implements Board {
+	private boolean[][] grid;
 
     // JTetris will use this constructor
-    public TetrisBoard(int width, int height) {}
+    public TetrisBoard(int width, int height) {
+    	grid = new boolean[height][width];
+    }
 
     @Override
     public Result move(Action act) { return Result.NO_PIECE; }

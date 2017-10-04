@@ -19,7 +19,7 @@ public class JTetris extends JComponent {
     public static final int WIDTH = 10;
     public static final int HEIGHT = 20;
 
-    public static final int PIXELS = 16;
+    public static final int PIXELS = 32;
 
     // Extra blocks at the top for pieces to start.
     // If a piece is sticking up into this area
