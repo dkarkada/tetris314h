@@ -20,17 +20,19 @@ public final class TetrisPiece extends Piece {
 		DUCKLEFT,
 		OTHER;
 	}
+	
 	public static HashMap<HashSet<Point>, TetrisType> templates;
 	
 	static {
 		templates = new HashMap<HashSet<Point>, TetrisType>();
-		String[] pieceStrings = { "0 0  1 0  2 0  3 0",
-                "0 1  1 1  2 1  2 0",
-                "0 0  0 1  1 1  2 1",
+		String[] pieceStrings = { 
+				"0 0  1 0  2 0  3 0",
+                "0 0  0 1  1 0  2 0",
+                "0 0  1 0  2 0  2 1",
                 "0 0  1 0  1 1  2 1",
                 "0 1  1 1  1 0  2 0",
                 "0 0  0 1  1 0  1 1",
-                "0 1  1 0  1 1  2 1" };
+                "0 0  0 1  0 2  1 1" };
 		templates.put(new HashSet<Point>(Arrays.asList(Piece.parsePoints(pieceStrings[0]))),
 				TetrisType.STICK);
 		templates.put(new HashSet<Point>(Arrays.asList(Piece.parsePoints(pieceStrings[1]))),
@@ -68,16 +70,18 @@ public final class TetrisPiece extends Piece {
 		TetrisPiece tNext = t1;
 		boolean done = false;
 		TetrisType typeVar  = TetrisType.OTHER;
+		
 		do {
 			for(Set<Point> template : TetrisPiece.templates.keySet()) {
 				if (tNext.bodyEquals(template)) {
 					done = true;
 					typeVar = TetrisPiece.templates.get(template);
+					tNext.spawnState = true;
 				}
 			}
 			if (!done)
 				tNext = (TetrisPiece) tNext.next;
-		}while (!done && tNext!=t1);
+		} while (!done && tNext!=t1);
 		
 		if (done) {
 			TetrisPiece head = tNext;
@@ -103,8 +107,11 @@ public final class TetrisPiece extends Piece {
 					break;
 				case T:
 					center = new Pivot(1, 1);
+					break;
+				default:
 					break;				
 			}
+			
 			do {
 				Pivot temp = new Pivot(0,0);
 				temp.x = center.x >= 0 ? center.x : center.x + tNext.width - 1;
@@ -114,9 +121,11 @@ public final class TetrisPiece extends Piece {
 				tNext = (TetrisPiece) tNext.next;
 			} while (tNext!=head);
 		}
+		
 		else
 			System.out.println("AAAAAAAAAA!!!!!!! u fucked up!!!!!");
 	}
+	
 	public static Point[] rotate(Point[] input) {
 		Point[] result = new Point[input.length];
 		int minx = Integer.MAX_VALUE;
@@ -134,6 +143,7 @@ public final class TetrisPiece extends Piece {
 		}
 		return result;
 	}
+	
 	public static void rotate(Pivot center) {
 		double x = - center.y;
 		double y = center.x;
@@ -141,13 +151,13 @@ public final class TetrisPiece extends Piece {
 		center.y = y;
 	}
 	
-	TetrisType type;
+	private TetrisType type;
 	private Pivot center;
 	private int height;
 	private int width;
 	private Point[] body;
 	private int[] skirt;
-	private ArrayList<TetrisPiece> rotations;
+	private boolean spawnState;
 	public Pivot location;
 	
 	public TetrisPiece(Point[] points) {
@@ -158,6 +168,7 @@ public final class TetrisPiece extends Piece {
 			maxX = Math.max(maxX, p.x);
 			maxY = Math.max(maxY, p.y);
 		}
+		spawnState = false;
 		width = maxX + 1;
 		height = maxY + 1;
 		calcSkirt(width);
@@ -216,6 +227,11 @@ public final class TetrisPiece extends Piece {
     		skirt[p.x] = Math.min(skirt[p.x], p.y);
     	}
     }
+    
+    public boolean isSpawnState() {
+    	return spawnState;
+    }
+    
     public String toString() {
     	return Arrays.toString(body);
     }
