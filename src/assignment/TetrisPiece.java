@@ -46,6 +46,15 @@ public final class TetrisPiece extends Piece {
 		templates.put(new HashSet<Point>(Arrays.asList(Piece.parsePoints(pieceStrings[6]))),
 				TetrisType.T);
 	}
+
+	/**
+     * Parse a "piece string" of the form "x1 y1 x2 y2 ..." into a TetrisPiece
+     * where the corresponding (x1, y1), (x2, y2) positions have been filled in.
+     */
+
+    public static Piece getPiece(String pieceString) {
+    	return new TetrisPiece(Piece.parsePoints(pieceString));
+    }
 	public static void createCircularLL(TetrisPiece t1) {
 		TetrisPiece t2 = new TetrisPiece(rotate(t1.getBody()));
 		TetrisPiece t3 = new TetrisPiece(rotate(t2.getBody()));
@@ -133,12 +142,13 @@ public final class TetrisPiece extends Piece {
 	}
 	
 	TetrisType type;
-	Pivot center;
+	private Pivot center;
 	private int height;
 	private int width;
 	private Point[] body;
 	private int[] skirt;
 	private ArrayList<TetrisPiece> rotations;
+	public Pivot location;
 	
 	public TetrisPiece(Point[] points) {
 		body = points;
@@ -152,16 +162,6 @@ public final class TetrisPiece extends Piece {
 		height = maxY + 1;
 		calcSkirt(width);
 	}
-
-	/**
-     * Parse a "piece string" of the form "x1 y1 x2 y2 ..." into a TetrisPiece
-     * where the corresponding (x1, y1), (x2, y2) positions have been filled in.
-     */
-	
-	//TODO check if can make the return type tetris piece
-    public static Piece getPiece(String pieceString) {
-    	return new TetrisPiece(Piece.parsePoints(pieceString));
-    }
     
     public TetrisType getType() {
     	return type;
@@ -183,6 +183,20 @@ public final class TetrisPiece extends Piece {
 
     @Override
     public int[] getSkirt() { return skirt; }
+    
+    public Piece prevRotation() {
+    	return nextRotation().nextRotation().nextRotation();
+    }
+    
+    public void initLocation(int topEdgeHeight, int midAlignWidth) {
+    	double topBuffer = height - center.y;
+    	double y = topEdgeHeight - height + center.y;
+    	double x = midAlignWidth + center.x - width/2;
+    	location = new Pivot(x, y);
+    }
+    public Pivot getPivot() {
+    	return center;
+    }
 
     @Override
     public boolean equals(Object other) {

@@ -9,6 +9,8 @@ import java.awt.*;
  */
 public final class TetrisBoard implements Board {
 	private boolean[][] state;
+	private int width;
+	private int height;
 	TetrisPiece nextPiece;
 	Board.Action lastAction;
 	Board.Result lastResult;
@@ -17,7 +19,9 @@ public final class TetrisBoard implements Board {
 	
 	
     // JTetris will use this constructor
-    public TetrisBoard(int width, int height) {
+    public TetrisBoard(int w, int h) {
+    	width = w;
+    	height = h;
     	state = new boolean[height][width];
     	nextPiece = null;
     	lastAction = Board.Action.NOTHING;
@@ -28,18 +32,59 @@ public final class TetrisBoard implements Board {
     public Result move(Action act) {
     	if (nextPiece == null)
     		return Result.NO_PIECE;
-    	
+    	Pivot loc = nextPiece.location;
+    	Pivot center = nextPiece.getPivot(); 
+    	switch(act) {
+    		case NOTHING:
+    			return Result.SUCCESS;
+    		case DOWN:
+    			loc.y -= 1;
+    			int rowBelow = (int) (loc.y - center.y - 1);
+    			int startX = (int) (loc.x - center.x);
+    			for(int x = startX; x < startX + nextPiece.getWidth(); x++) {
+    				int i = (int) (x - loc.x + center.x);
+    				int y = rowBelow + nextPiece.getSkirt()[i];
+    				if(getGrid(x, y)) {
+    					place();
+    					return Result.PLACE;
+    				}
+    			}
+    			return Result.SUCCESS;
+    		case LEFT:
+    			loc.x -= 1;
+    			return Result.SUCCESS;
+    		case RIGHT:
+    			nextPiece.location.x += 1;
+    			return Result.SUCCESS;
+    		case COUNTERCLOCKWISE:
+    			nextPiece = (TetrisPiece) nextPiece.nextRotation();
+    			nextPiece.location = loc;
+    			return Result.SUCCESS;
+    		case CLOCKWISE:
+    			nextPiece = (TetrisPiece) nextPiece.prevRotation();
+    			nextPiece.location = loc;
+    			return Result.SUCCESS;
+    		case DROP:
+    			Result r = null;
+    			while(r != Result.PLACE) {
+    				r = move(Action.DOWN);
+    			}
+    			return r;
+    	}
     	return Result.SUCCESS;
     }
 
     @Override
     public Board testMove(Action act) { 
-    	return null; 
+    	return null;
+    	//TODO implement
     }
 
     @Override
     public void nextPiece(Piece p) {
     	nextPiece = (TetrisPiece) p;
+		TetrisPiece.createCircularLL(nextPiece);
+    	nextPiece.initLocation(height, width/2);
     }
 
     @Override
@@ -47,8 +92,8 @@ public final class TetrisBoard implements Board {
     	TetrisBoard otherBoard = (TetrisBoard) other;
     	boolean[][] otherBoardState = otherBoard.getState();
     	
-    	for (int r = 0; r < state[0].length; r++) {
-    		for (int c = 0; c < state.length; c++) {
+    	for (int r = 0; r < height; r++) {
+    		for (int c = 0; c < width; c++) {
     			if (!valid(r,c) || !(otherBoard.valid(r,c))) {
     				return false;
     			}
@@ -82,12 +127,12 @@ public final class TetrisBoard implements Board {
 
     @Override
     public int getWidth() { 
-    	return state.length; 
+    	return width; 
     }
 
     @Override
     public int getHeight() {
-    	return state[0].length;
+    	return height;
     }
 
     @Override
@@ -106,11 +151,37 @@ public final class TetrisBoard implements Board {
     public boolean getGrid(int x, int y) {
     	if (!valid(x, y))
     		return true;
-    	return state[x][y];
+    	if (nextPiece != null) {
+	    	Point[] piece = nextPiece.getBody();
+	    	Pivot center = nextPiece.getPivot();
+	    	for (Point p : piece) {
+	    		int px = (int) (p.x - center.x + nextPiece.location.x);
+	    		int py = (int) (p.y - center.y + nextPiece.location.y);
+	    		if (px == x && py == y)
+	    			return true;
+	    	}
+    	}
+    	return state[yToRow(y)][xToCol(x)];
     }
     
     public boolean valid(int x, int y) {
-    	return x >= 0 && x < getWidth() && y >=0 && y < getHeight();
+    	return x >= 0 && x < width && y >=0 && y < height;
     }
-
+    private int xToCol(int x) {
+    	return x;
+    }
+    private int yToRow(int y) {
+    	return height - y - 1;
+    }
+    
+    private void place() {
+    	Point[] piece = nextPiece.getBody();
+    	Pivot center = nextPiece.getPivot();
+    	for (Point p : piece) {
+    		int x = (int) (p.x - center.x + nextPiece.location.x);
+    		int y = (int) (p.y - center.y + nextPiece.location.y);
+    		state[yToRow(y)][xToCol(x)] = true;
+    	}
+    	nextPiece = null;
+    }
 }
