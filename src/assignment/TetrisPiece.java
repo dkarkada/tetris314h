@@ -22,6 +22,7 @@ public final class TetrisPiece extends Piece {
 	}
 	
 	public static HashMap<HashSet<Point>, TetrisType> templates;
+	public static ArrayList<Point[]> wallKickData;
 	
 	static {
 		templates = new HashMap<HashSet<Point>, TetrisType>();
@@ -47,6 +48,30 @@ public final class TetrisPiece extends Piece {
 				TetrisType.SQUARE);
 		templates.put(new HashSet<Point>(Arrays.asList(Piece.parsePoints(pieceStrings[6]))),
 				TetrisType.T);
+		
+		String[] wallKickStrings = {
+				"1 0  1 1  0 -2  1 -2", // 0>L
+				"-1 0  -1 -1  0 2  -1 2", // L>2
+				"-1 0  -1 1  0 -2  -1 -2", // 2>R
+				"1 0  1 -1  0 2  1 2" // R>0
+		};
+		
+		String[] wallKickStringsStick = {
+				"-1 0  2 0  -1 2  2 -1", // 0>L
+				"-2 0  1 0  -2 -1  1 2", // L>2
+				"1 0  -2 0  1 -2  -2 1", // 2>R
+				"2 0  -1 0  2 1  -1 -2" // R>0
+		};
+		
+		wallKickData = new ArrayList<Point[]>();
+		
+		for (String s : wallKickStrings) {
+			wallKickData.add(Piece.parsePoints(s));
+		}
+		
+		for (String s : wallKickStringsStick) {
+			wallKickData.add(Piece.parsePoints(s));
+		}
 	}
 
 	/**
@@ -57,6 +82,7 @@ public final class TetrisPiece extends Piece {
     public static Piece getPiece(String pieceString) {
     	return new TetrisPiece(Piece.parsePoints(pieceString));
     }
+    
 	public static void createCircularLL(TetrisPiece t1) {
 		TetrisPiece t2 = new TetrisPiece(rotate(t1.getBody()));
 		TetrisPiece t3 = new TetrisPiece(rotate(t2.getBody()));
@@ -71,21 +97,24 @@ public final class TetrisPiece extends Piece {
 		boolean done = false;
 		TetrisType typeVar  = TetrisType.OTHER;
 		
+		// Find the rotation of the piece that is the correct spawn position (rotation 0)
 		do {
 			for(Set<Point> template : TetrisPiece.templates.keySet()) {
 				if (tNext.bodyEquals(template)) {
 					done = true;
 					typeVar = TetrisPiece.templates.get(template);
-					tNext.spawnState = true;
 				}
 			}
+			
 			if (!done)
 				tNext = (TetrisPiece) tNext.next;
+			
 		} while (!done && tNext!=t1);
 		
 		if (done) {
 			TetrisPiece head = tNext;
 			Pivot center = new Pivot(0,0);
+			
 			switch (typeVar) {
 				case STICK:
 					center = new Pivot(1.5, 0.5);
@@ -112,12 +141,23 @@ public final class TetrisPiece extends Piece {
 					break;				
 			}
 			
+			int rotationNum = 0;
 			do {
 				Pivot temp = new Pivot(0,0);
 				temp.x = center.x >= 0 ? center.x : center.x + tNext.width - 1;
-				temp.y = center.y >= 0 ? center.y : center.y + tNext.height - 1;		
+				temp.y = center.y >= 0 ? center.y : center.y + tNext.height - 1;
 				tNext.center = temp;
+				
+				// Flag piece as a stick
+				if (typeVar == TetrisType.STICK)
+					tNext.isStick = true;
+				
+				// Set rotation number (from 0 to 3)
+				tNext.thisRotation = rotationNum;
+				rotationNum++;
+				
 				rotate(center);
+				
 				tNext = (TetrisPiece) tNext.next;
 			} while (tNext!=head);
 		}
@@ -158,17 +198,22 @@ public final class TetrisPiece extends Piece {
 	private Point[] body;
 	private int[] skirt;
 	private boolean spawnState;
+	public int thisRotation;
 	public Pivot location;
+	private boolean isStick;
 	
 	public TetrisPiece(Point[] points) {
 		body = points;
 		int maxX = Integer.MIN_VALUE;
 		int maxY = Integer.MIN_VALUE;
+		
 		for (Point p : body) {
 			maxX = Math.max(maxX, p.x);
 			maxY = Math.max(maxY, p.y);
 		}
+		
 		spawnState = false;
+		isStick = false;
 		width = maxX + 1;
 		height = maxY + 1;
 		calcSkirt(width);
@@ -230,6 +275,10 @@ public final class TetrisPiece extends Piece {
     
     public boolean isSpawnState() {
     	return spawnState;
+    }
+    
+    public int getThisRotation() {
+    	return thisRotation;
     }
     
     public String toString() {

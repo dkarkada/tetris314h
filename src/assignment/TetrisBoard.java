@@ -1,7 +1,9 @@
 package assignment;
 
 import java.awt.*;
-import java.util.*; 
+import java.util.*;
+
+import assignment.TetrisPiece.TetrisType; 
 
 /**
  * Represents a Tetris board -- essentially a 2-d grid of booleans. Supports
@@ -78,14 +80,72 @@ public final class TetrisBoard implements Board {
     			}
     			loc.x -= 1;
     			return Result.OUT_BOUNDS;
-    		case COUNTERCLOCKWISE:
+    		case COUNTERCLOCKWISE: {
+    			TetrisPiece currentPiece = nextPiece;
     			nextPiece = (TetrisPiece) nextPiece.nextRotation();
     			nextPiece.location = loc;
+    			
+//    			if (!pieceValid()) {
+//    				// Get rotation of current piece
+//    				int thisRotation = currentPiece.getThisRotation();
+//    				
+//    				if (nextPiece.getType().equals(TetrisType.STICK))
+//    					thisRotation += 4;
+//    				
+//    				Point[] wallKickData = TetrisPiece.wallKickData.get(thisRotation);
+//	    			for (Point p : wallKickData) {
+//	    				// Make copy of current location settings
+//	    				Pivot tempLoc = loc;
+//	    				tempLoc.x += p.x;
+//	    				tempLoc.y += p.y;
+//	    				
+//	    				// Test wall kick scenario, return if it is ok
+//	    				nextPiece.location = tempLoc;
+//	    				if (pieceValid()) {
+//	    					return Result.SUCCESS;
+//	    				}
+//	    				// Otherwise, reset to original location and try again with next wall kick data point
+//	    				else {
+//	    					nextPiece.location = loc;
+//	    				}
+//	    			}
+//	    			return Result.OUT_BOUNDS;
+//    			}
     			return Result.SUCCESS;
-    		case CLOCKWISE:
+			}
+    		case CLOCKWISE: {
+    			TetrisPiece currentPiece = nextPiece;
     			nextPiece = (TetrisPiece) nextPiece.prevRotation();
     			nextPiece.location = loc;
+    			
+//    			if (!pieceValid()) {
+//    				// Get rotation of current piece
+//    				int thisRotation = (currentPiece.getThisRotation()+3)%4;
+//    				
+//    				if (nextPiece.getType().equals(TetrisType.STICK))
+//    					thisRotation += 4;
+//    				
+//    				Point[] wallKickData = TetrisPiece.wallKickData.get(thisRotation);
+//	    			for (Point p : wallKickData) {
+//	    				// Make copy of current location settings
+//	    				Pivot tempLoc = nextPiece.location;
+//	    				tempLoc.x += (-1*p.x);
+//	    				tempLoc.y += (-1*p.y);
+//	    				
+//	    				// Test wall kick scenario, return if it is ok
+//	    				nextPiece.location = tempLoc;
+//	    				if (pieceValid()) {
+//	    					return Result.SUCCESS;
+//	    				}
+//	    				// Otherwise, reset to original location and try again with next wall kick data point
+//	    				else {
+//	    					nextPiece.location = tempLoc;
+//	    				}
+//	    			}
+//	    			return Result.OUT_BOUNDS;
+//    			}
     			return Result.SUCCESS;
+			}
     		case DROP:
     			Result r = null;
     			while(r != Result.PLACE) {
@@ -158,16 +218,24 @@ public final class TetrisBoard implements Board {
     }
 
     @Override
-    public int getMaxHeight() { return maxHeight; }
+    public int getMaxHeight() {
+    	return maxHeight;
+    }
 
     @Override
-    public int dropHeight(Piece piece, int x) { return -1; }
+    public int dropHeight(Piece piece, int x) {
+    	return -1;
+    }
 
     @Override
-    public int getColumnHeight(int x) { return colFillNums[x]; }
+    public int getColumnHeight(int x) {
+    	return colFillNums[x];
+    }
 
     @Override
-    public int getRowWidth(int y) { return rowFillNums[y]; }
+    public int getRowWidth(int y) {
+    	return rowFillNums[y];
+    }
 
     @Override
     public boolean getGrid(int x, int y) {
