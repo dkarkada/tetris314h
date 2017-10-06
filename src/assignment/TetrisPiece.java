@@ -33,7 +33,7 @@ public final class TetrisPiece extends Piece {
                 "0 0  1 0  1 1  2 1",
                 "0 1  1 1  1 0  2 0",
                 "0 0  0 1  1 0  1 1",
-                "0 0  0 1  0 2  1 1" };
+                "0 0  1 0  2 0  1 1" };
 		templates.put(new HashSet<Point>(Arrays.asList(Piece.parsePoints(pieceStrings[0]))),
 				TetrisType.STICK);
 		templates.put(new HashSet<Point>(Arrays.asList(Piece.parsePoints(pieceStrings[1]))),
@@ -117,25 +117,25 @@ public final class TetrisPiece extends Piece {
 			
 			switch (typeVar) {
 				case STICK:
-					center = new Pivot(1.5, 0.5);
+					center = new Pivot(1.5, -0.5);
 					break;
 				case J:
-					center = new Pivot(1, 1);
+					center = new Pivot(1, 0);
 					break;
 				case L:
-					center = new Pivot(1, 1);
+					center = new Pivot(1, 0);
 					break;
 				case DUCKRIGHT:
-					center = new Pivot(1, 1);
+					center = new Pivot(1, 0);
 					break;
 				case DUCKLEFT:
-					center = new Pivot(1, 1);
+					center = new Pivot(1, 0);
 					break;
 				case SQUARE:
 					center = new Pivot(0.5, 0.5);
 					break;
 				case T:
-					center = new Pivot(1, 1);
+					center = new Pivot(1, 0);
 					break;
 				default:
 					break;				
@@ -143,18 +143,16 @@ public final class TetrisPiece extends Piece {
 			
 			int rotationNum = 0;
 			do {
-				Pivot temp = new Pivot(0,0);
-				temp.x = center.x >= 0 ? center.x : center.x + tNext.width - 1;
-				temp.y = center.y >= 0 ? center.y : center.y + tNext.height - 1;
-				tNext.center = temp;
-				
-				// Flag piece as a stick
-				if (typeVar == TetrisType.STICK)
-					tNext.isStick = true;
-				
+				tNext.setType(typeVar);
 				// Set rotation number (from 0 to 3)
 				tNext.thisRotation = rotationNum;
 				rotationNum++;
+				
+				int offsetX = (tNext.thisRotation == 1 || tNext.thisRotation == 2) ? tNext.width - 1 : 0;
+				int offsetY = (tNext.thisRotation == 2 || tNext.thisRotation == 3) ? tNext.height - 1 : 0;
+				
+				Pivot temp = new Pivot(center.x + offsetX, center.y + offsetY);
+				tNext.center = temp;
 				
 				rotate(center);
 				
@@ -200,7 +198,6 @@ public final class TetrisPiece extends Piece {
 	private boolean spawnState;
 	public int thisRotation;
 	public Pivot location;
-	private boolean isStick;
 	
 	public TetrisPiece(Point[] points) {
 		body = points;
@@ -213,7 +210,6 @@ public final class TetrisPiece extends Piece {
 		}
 		
 		spawnState = false;
-		isStick = false;
 		width = maxX + 1;
 		height = maxY + 1;
 		calcSkirt(width);

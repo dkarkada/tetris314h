@@ -5,6 +5,9 @@ import java.util.*;
 
 import assignment.TetrisPiece.TetrisType; 
 
+//TODO: figure out strange bug where newly spawned piece cant rotate and throws errors, also when stick is in vertical slot and tries to rotate also throws weird errors
+//TODO: split out logic that checks whether or not to place piece into its own method
+
 /**
  * Represents a Tetris board -- essentially a 2-d grid of booleans. Supports
  * tetris pieces and row clearing.  Does not do any drawing or have any idea of
@@ -37,9 +40,12 @@ public final class TetrisBoard implements Board {
 
     @Override
     public Result move(Action act) {
+    	
     	if (nextPiece == null)
     		return Result.NO_PIECE;
+    	
     	Pivot loc = nextPiece.location;
+    	
     	switch(act) {
     		case NOTHING:
     			return Result.SUCCESS;
@@ -85,67 +91,103 @@ public final class TetrisBoard implements Board {
     			nextPiece = (TetrisPiece) nextPiece.nextRotation();
     			nextPiece.location = loc;
     			
-//    			if (!pieceValid()) {
-//    				// Get rotation of current piece
-//    				int thisRotation = currentPiece.getThisRotation();
-//    				
-//    				if (nextPiece.getType().equals(TetrisType.STICK))
-//    					thisRotation += 4;
-//    				
-//    				Point[] wallKickData = TetrisPiece.wallKickData.get(thisRotation);
-//	    			for (Point p : wallKickData) {
-//	    				// Make copy of current location settings
-//	    				Pivot tempLoc = loc;
-//	    				tempLoc.x += p.x;
-//	    				tempLoc.y += p.y;
-//	    				
-//	    				// Test wall kick scenario, return if it is ok
-//	    				nextPiece.location = tempLoc;
-//	    				if (pieceValid()) {
-//	    					return Result.SUCCESS;
-//	    				}
-//	    				// Otherwise, reset to original location and try again with next wall kick data point
-//	    				else {
-//	    					nextPiece.location = loc;
-//	    				}
-//	    			}
-//	    			return Result.OUT_BOUNDS;
-//    			}
-    			return Result.SUCCESS;
-			}
+    			if (!pieceValid()) {
+    				// Get rotation of current piece
+    				int thisRotation = currentPiece.getThisRotation();
+    				
+    				if (nextPiece.getType() == TetrisType.STICK)
+    					thisRotation += 4;
+    				
+    				Point[] wallKickData = TetrisPiece.wallKickData.get(thisRotation);
+	    			for (Point p : wallKickData) {
+	    				// Make copy of current location settings
+	    				loc.x += p.x;
+	    				loc.y += p.y;
+	    				
+	    				// Test wall kick scenario, return if it is ok
+	    				nextPiece.location = loc;
+	        			if (pieceValid()) {
+	        				loc.y -= 1;
+	            			if (pieceValid()) {
+	            				loc.y += 1;
+	            				return Result.SUCCESS;
+	            			}
+	            			loc.y += 1;
+	        				place();
+	            			return Result.PLACE;
+	        			}
+	    				// Otherwise, reset to original location and try again with next wall kick data point
+	    				else {
+	    					loc.x -= p.x;
+	    					loc.y -= p.y;
+	    				}
+	    			}
+	    			System.out.println("Invalid rotation counterclockwise");
+	    			
+	    			// Reset piece to original state if no wall kicks work
+	    			nextPiece = currentPiece;
+	    			return Result.OUT_BOUNDS;
+    			}
+    			loc.y -= 1;
+    			if (pieceValid()) {
+    				loc.y += 1;
+    				return Result.SUCCESS;
+    			}
+				loc.y += 1;
+				place();
+    			return Result.PLACE;
+    		}
     		case CLOCKWISE: {
     			TetrisPiece currentPiece = nextPiece;
     			nextPiece = (TetrisPiece) nextPiece.prevRotation();
     			nextPiece.location = loc;
     			
-//    			if (!pieceValid()) {
-//    				// Get rotation of current piece
-//    				int thisRotation = (currentPiece.getThisRotation()+3)%4;
-//    				
-//    				if (nextPiece.getType().equals(TetrisType.STICK))
-//    					thisRotation += 4;
-//    				
-//    				Point[] wallKickData = TetrisPiece.wallKickData.get(thisRotation);
-//	    			for (Point p : wallKickData) {
-//	    				// Make copy of current location settings
-//	    				Pivot tempLoc = nextPiece.location;
-//	    				tempLoc.x += (-1*p.x);
-//	    				tempLoc.y += (-1*p.y);
-//	    				
-//	    				// Test wall kick scenario, return if it is ok
-//	    				nextPiece.location = tempLoc;
-//	    				if (pieceValid()) {
-//	    					return Result.SUCCESS;
-//	    				}
-//	    				// Otherwise, reset to original location and try again with next wall kick data point
-//	    				else {
-//	    					nextPiece.location = tempLoc;
-//	    				}
-//	    			}
-//	    			return Result.OUT_BOUNDS;
-//    			}
-    			return Result.SUCCESS;
-			}
+    			if (!pieceValid()) {
+    				// Get rotation of current piece
+    				int thisRotation = (currentPiece.getThisRotation()+3)%4;
+    				
+    				if (nextPiece.getType() == TetrisType.STICK)
+    					thisRotation += 4;
+    				
+    				Point[] wallKickData = TetrisPiece.wallKickData.get(thisRotation);
+	    			for (Point p : wallKickData) {
+	    				// Make copy of current location settings
+	    				loc.x += (-1*p.x);
+	    				loc.y += (-1*p.y);
+	    				
+	    				// Test wall kick scenario, return if it is ok
+	    				nextPiece.location = loc;
+	        			if (pieceValid()) {
+	        				loc.y -= 1;
+	            			if (pieceValid()) {
+	            				loc.y += 1;
+	            				return Result.SUCCESS;
+	            			}
+	            			loc.y += 1;
+	        				place();
+	            			return Result.PLACE;
+	        			}
+	    				// Otherwise, reset to original location and try again with next wall kick data point
+	    				else {
+	    					loc.x -= p.x;
+	    					loc.y -= p.y;
+	    				}
+	    			}
+
+	    			// Reset piece to original state if no wall kicks work
+	    			nextPiece = currentPiece;
+	    			System.out.println("Invalid rotation clockwise");
+	    			return Result.OUT_BOUNDS;
+    			}
+    			loc.y -= 1;
+    			if (pieceValid()) {
+    				loc.y += 1;
+    				return Result.SUCCESS;
+    			}
+				loc.y += 1;
+				place();
+    			return Result.PLACE;
+    		}
     		case DROP:
     			Result r = null;
     			while(r != Result.PLACE) {
@@ -281,6 +323,7 @@ public final class TetrisBoard implements Board {
     	for (Point p : piece) {
     		int x = (int) (p.x - center.x + nextPiece.location.x);
     		int y = (int) (p.y - center.y + nextPiece.location.y);
+    		System.out.println(x+" "+y);
     		state[yToRow(y)][xToCol(x)] = true;
     	}
     	nextPiece = null;
