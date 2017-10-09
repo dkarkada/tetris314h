@@ -88,6 +88,7 @@ public final class TetrisBoard implements Board {
     			return Result.OUT_BOUNDS;
     		case COUNTERCLOCKWISE: {
     			TetrisPiece currentPiece = nextPiece;
+    			Pivot currentLoc = new Pivot(loc.x, loc.y);
     			nextPiece = (TetrisPiece) nextPiece.nextRotation();
     			nextPiece.location = loc;
     			
@@ -126,6 +127,7 @@ public final class TetrisBoard implements Board {
 	    			
 	    			// Reset piece to original state if no wall kicks work
 	    			nextPiece = currentPiece;
+	    			nextPiece.location = currentLoc;
 	    			return Result.OUT_BOUNDS;
     			}
     			loc.y -= 1;
@@ -139,6 +141,7 @@ public final class TetrisBoard implements Board {
     		}
     		case CLOCKWISE: {
     			TetrisPiece currentPiece = nextPiece;
+    			Pivot currentLoc = new Pivot(loc.x, loc.y);
     			nextPiece = (TetrisPiece) nextPiece.prevRotation();
     			nextPiece.location = loc;
     			
@@ -176,6 +179,8 @@ public final class TetrisBoard implements Board {
 
 	    			// Reset piece to original state if no wall kicks work
 	    			nextPiece = currentPiece;
+	    			nextPiece.location = currentLoc;
+	    			System.out.println(nextPiece.location.x+" "+nextPiece.location.y);
 	    			System.out.println("Invalid rotation clockwise");
 	    			return Result.OUT_BOUNDS;
     			}
@@ -323,7 +328,7 @@ public final class TetrisBoard implements Board {
     	for (Point p : piece) {
     		int x = (int) (p.x - center.x + nextPiece.location.x);
     		int y = (int) (p.y - center.y + nextPiece.location.y);
-    		System.out.println(x+" "+y);
+    		//System.out.println(x+" "+y);
     		state[yToRow(y)][xToCol(x)] = true;
     	}
     	nextPiece = null;
