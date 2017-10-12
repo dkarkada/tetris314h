@@ -204,11 +204,36 @@ public final class TetrisBoard implements Board {
     }
 
     @Override
-    public Board testMove(Action act) { 
-    	return null;
-    	//TODO implement
+    public Board testMove(Action act) {
+    	//boolean[][] oldState = copy(this.getState());
+    	
+    	Result result = this.move(act);
+    	lastResult = result;
+    	
+    	if (result == Result.SUCCESS || result == Result.PLACE) {
+    		return this;
+    	}
+    	else {
+    		//this.state = oldState;
+        	return null;
+    	}
+    }
+    /**
+     * Copy over the state of the current board so we can modify it without fear of making bad changes
+     * @param currentState
+     */
+    private boolean[][] copy(boolean[][] currentState) {
+    	boolean[][] oldState = new boolean[height][width];
+    	for (int r = 0; r < height; r++) {
+    		for (int c = 0; c < width; c++) {
+    			oldState[r][c] = currentState[r][c];
+    		}
+    	}
+    	
+    	return oldState;
     }
 
+    
     @Override
     public void nextPiece(Piece p) {
     	nextPiece = (TetrisPiece) p;
