@@ -6,28 +6,17 @@ import assignment.Board.Result;
 
 public class LessLameBrain implements Brain{
 	HashMap<PieceState, PieceState> links;
-	Stack<Action> solution;
-	boolean solved;
 	
 	public LessLameBrain() {
 		 links = new HashMap<PieceState, PieceState>();
-		 solution = new Stack<Action>();
-		 solved = false;
 	}
 	
 	@Override
 	public Action nextMove(Board currentBoard) {
-		if (! solved) {
-			links.clear();
-			calcPaths(currentBoard, null, null);
-			calcSolution();
-			solved = true;
-		}
-		if (solution.size() == 0) {
-			solved = false;
-			return Action.DOWN;
-		}
-		return solution.remove(solution.size()-1);
+		links.clear();
+		System.out.println((TetrisBoard)currentBoard);
+		calcPaths(currentBoard, null, null);		
+		return calcSolution(currentBoard);
 	}
 	private void calcPaths(Board b, PieceState parent, Action prev) {
 		TetrisBoard board = (TetrisBoard) b;
@@ -43,14 +32,8 @@ public class LessLameBrain implements Brain{
 		}
 		links.put(p, p.parent);
 		
-		Board down;
-		try {
-		down = board.testMove(Action.DOWN);
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println(p);
-			down = board;
-		}
+	
+		Board down = board.testMove(Action.DOWN);
 		if (down.getLastResult() == Result.PLACE) {
 			p.place();
 		}
@@ -67,19 +50,43 @@ public class LessLameBrain implements Brain{
 		}
 		
 	}
-	private void calcSolution() {
-		if (links.size() > 0) {
-			Iterator<PieceState> it = links.keySet().iterator();
-			PieceState best = it.next();
-			while (! best.isPlaced())
-				best = it.next();
-			while (links.get(best) != null) {
-				solution.add(best.prevAction);
-				best = links.get(best);
+	private Action calcSolution(Board b) {
+		TetrisBoard board = (TetrisBoard) b;
+		HashMap<PieceState, Double> pathScores = new HashMap<PieceState, Double>();
+		for (PieceState p : links.keySet()) {
+			if (p.isPlaced()) {
+				TetrisBoard clone = board.clone();
+				clone.setPieceParams(p.location, p.rotationNum);
+				clone.place();
+				pathScores.put(p, score(clone));
 			}
 		}
+		PieceState best = null;
+		for (PieceState p : pathScores.keySet()) {
+			if (best==null || pathScores.get(p) > pathScores.get(best) ||
+					(pathScores.get(p) == pathScores.get(best) && p.hashCode()>best.hashCode()))
+				best = p;
+		}
+		
+		TetrisBoard clone = board.clone();
+		clone.setPieceParams(best.location, best.rotationNum);
+		clone.place();
+		System.out.println(clone);
+		
+		ArrayList<Action> temp = new ArrayList<Action>();
+		while (links.get(links.get(best)) != null) {
+			temp.add(best.prevAction);
+			best = links.get(best);
+		}
+		System.out.println(temp);
+		return links.get(best)==null ? Action.DOWN : best.prevAction;		
 	}
-	
+	private double score (TetrisBoard b) {
+		int score = 100;
+		score -= 100 * Math.pow(((double) b.getMaxHeight()/b.getHeight()), 1);
+//		System.out.println(score);
+		return score;
+	}
 	private int countHolesInBoard(TetrisBoard b) {
 		int count = 0;
 		for (int i = 0; i < b.getHeight(); i++) {
@@ -93,9 +100,8 @@ public class LessLameBrain implements Brain{
 }
 
 class PieceState {
-	private Pivot location;
-	private int rotationNum;
-//	ArrayList<Action> path;
+	Pivot location;
+	int rotationNum;
 	PieceState parent;
 	Action prevAction;
 	private boolean placed;
@@ -104,7 +110,6 @@ class PieceState {
 	public PieceState(Pivot loc, int rot, PieceState par, Action a) {
 		location = loc;
 		rotationNum = rot;
-//		path = p;
 		parent = par;
 		length = par != null ? par.length + 1 : 0;
 		prevAction = a;

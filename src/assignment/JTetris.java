@@ -178,7 +178,7 @@ public class JTetris extends JComponent {
         // tick(DOWN) periodically
         timer = new javax.swing.Timer(DELAY, new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
-                    //TODO uncomment tick(Board.Action.DOWN);
+                    tick(Board.Action.DOWN);
                 }
             });
     }

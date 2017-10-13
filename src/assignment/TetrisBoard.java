@@ -208,7 +208,7 @@ public final class TetrisBoard implements Board {
     }
     @Override
     public int getRowsCleared() { 
-    	return -1; 
+    	return rowsCleared; 
     }
     @Override
     public int getWidth() { 
@@ -255,6 +255,14 @@ public final class TetrisBoard implements Board {
     public int getColumnHeight(int x) {
     	return colFillNums[x];
     }
+    public int getColumnFill(int x) {
+    	int count = 0;
+    	for (int y=0; y<height; y++) {
+    		if (state[yToRow(y)][xToCol(x)])
+    			count++;
+    	}
+    	return count;
+    }
     @Override
     public int getRowWidth(int y) {
     	return rowFillNums[y];
@@ -276,11 +284,16 @@ public final class TetrisBoard implements Board {
     	return state[yToRow(y)][xToCol(x)];
     }
     
+    public void setPieceParams(Pivot location, int rotationNum) {
+    	while (curPiece.getThisRotation() != rotationNum)
+    		curPiece = (TetrisPiece) curPiece.next;
+    	curPiece.location = location;
+    }
     public String toString() {
     	String result = "Board:\n";
-    	for (boolean[] row : state) {
-    		for (boolean b : row)
-    			result += b ? "# " : "  ";
+    	for (int y = height - 1; y>=0; y--) {
+    		for (int x = 0; x < width; x++)
+    			result += getGrid(x, y) ? "# " : "  ";
     		result += "\n";
     	}
     	return result;
@@ -321,8 +334,7 @@ public final class TetrisBoard implements Board {
     	}
     	return true;
     }
-    
-    private void place() {
+    public void place() {
     	Point[] piece = curPiece.getBody();
     	Pivot center = curPiece.getPivot();
     	for (Point p : piece) {
