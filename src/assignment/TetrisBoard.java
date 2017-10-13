@@ -29,6 +29,12 @@ public final class TetrisBoard implements Board {
 	
     // JTetris will use this constructor
     public TetrisBoard(int w, int h) {
+    	if (w < 4) {
+    		throw new IllegalArgumentException("Width must be greater than 4");
+    	}
+    	if (h < 4) {
+    		throw new IllegalArgumentException("Height must be greater than 4");
+    	}
     	width = w;
     	height = h;
     	rowFillNums = new int[height];
@@ -172,8 +178,13 @@ public final class TetrisBoard implements Board {
     @Override
     public void nextPiece(Piece p) {
     	curPiece = (TetrisPiece) p;
-		TetrisPiece.createCircularLL(curPiece);
-    	curPiece.initLocation(height, width/2);
+    	if (curPiece != null && curPiece.getBody() != null) {
+    		TetrisPiece.createCircularLL(curPiece);
+        	curPiece.initLocation(height, width/2);
+    	}
+    	else {
+    		System.out.println("Null piece passed to board.");
+    	}
     }
     @Override
     public boolean equals(Object other) {
