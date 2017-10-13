@@ -56,7 +56,7 @@ public class LessLameBrain implements Brain{
 		for (PieceState p : links.keySet()) {
 			if (p.isPlaced()) {
 				TetrisBoard clone = board.clone();
-				clone.setPieceParams(p.location, p.rotationNum);
+//				clone.setPieceParams(p.location, p.rotationNum);
 				clone.place();
 				pathScores.put(p, score(clone));
 			}
@@ -86,16 +86,6 @@ public class LessLameBrain implements Brain{
 		score -= 100 * Math.pow(((double) b.getMaxHeight()/b.getHeight()), 1);
 //		System.out.println(score);
 		return score;
-	}
-	private int countHolesInBoard(TetrisBoard b) {
-		int count = 0;
-		for (int i = 0; i < b.getHeight(); i++) {
-			for (int j = 0; j < b.getWidth(); j++) {
-				
-			}
-		}
-		
-		return 0;
 	}
 }
 

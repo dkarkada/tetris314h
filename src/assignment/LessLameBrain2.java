@@ -29,14 +29,11 @@ public class LessLameBrain2 implements Brain {
         // Check all of the options and get the one with the highest score
         for (int i = 0; i < options.size(); i++) {
             double score = scoreBoard(options.get(i), currentBoard);
-            System.out.println(options.get(i));
-            System.out.println(score);
             if (score > best) {
                 best = score;
                 bestIndex = i;
             }
         }
-        System.out.println("--------------------------------------------------------");
         // We want to return the first move on the way to the best Board
         return firstMoves.get(bestIndex);
     }
@@ -84,9 +81,11 @@ public class LessLameBrain2 implements Brain {
      */
     private double scoreBoard(Board newBoard, Board oldBoard) {
     	double score = 100;
-    	score -= 100 * Math.pow(((double) newBoard.getMaxHeight())/newBoard.getHeight(), 3);
+    	
+    	score -= 100 * Math.pow(((double) newBoard.getMaxHeight())/newBoard.getHeight(), 2);
     	score += 100 * (newBoard.getRowsCleared() - oldBoard.getRowsCleared());
-    	score -= 10 * Math.log(getHoles(newBoard) + 1);
+    	score -= 30 * Math.log((getHoles(newBoard)+1));
+    	score += 200 * Math.pow(getFill(newBoard), 2);
         return score;
     }
     
@@ -98,6 +97,17 @@ public class LessLameBrain2 implements Brain {
     		int fill = t.getColumnFill(x);
     		count += height - fill;
     	}
+    	return count;
+    }
+    public double getFill (Board b) {
+    	TetrisBoard t = (TetrisBoard) b;
+    	double count = 0;
+    	for (int y=0; y<t.getMaxHeight(); y++) {
+    		int fill = t.getRowWidth(y);
+    		double gradient = ((double)(t.getMaxHeight()-y)) / t.getMaxHeight();
+    		count +=  gradient * ((double)fill) / t.getWidth();
+    	}
+    	count /= t.getMaxHeight();
     	return count;
     }
 

@@ -48,6 +48,8 @@ public final class TetrisBoard implements Board {
 
     @Override
     public Result move(Action act) {
+    	if (act==null)
+    		throw new IllegalArgumentException();
     	lastAction = act;
     	lastResult = Result.SUCCESS;
     	if (curPiece == null)
@@ -294,7 +296,6 @@ public final class TetrisBoard implements Board {
     	}
     	return state[yToRow(y)][xToCol(x)];
     }
-    
     public void setPieceParams(Pivot location, int rotationNum) {
     	while (curPiece.getThisRotation() != rotationNum)
     		curPiece = (TetrisPiece) curPiece.next;
@@ -302,10 +303,10 @@ public final class TetrisBoard implements Board {
     }
     public String toString() {
     	String result = "Board:\n";
-    	for (int y = height - 1; y>=0; y--) {
+	  	for (int y = height - 1; y>=0; y--) {
     		for (int x = 0; x < width; x++)
-    			result += getGrid(x, y) ? "# " : "  ";
-    		result += "\n";
+   			result += getGrid(x, y) ? "# " : "  ";
+     		result += "\n";
     	}
     	return result;
     }
