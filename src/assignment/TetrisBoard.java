@@ -94,9 +94,12 @@ public final class TetrisBoard implements Board {
 		    				loc.x += p.x;
 		    				loc.y += p.y;
 		    				// Test wall kick scenario, if not ok reset to original location and try again
-		        			if (pieceValid())
+		        			if (pieceValid()) {
 		        				valid = true;
+		        				System.out.println("This point worked: "+p);
+		        			}
 		    				else {
+		    					System.out.println("This point didn't work: "+p);
 		    					loc.x -= p.x;
 		    					loc.y -= p.y;
 			        			ind++;
@@ -116,10 +119,12 @@ public final class TetrisBoard implements Board {
 	    			Pivot beforeRotationLoc = new Pivot(loc.x, loc.y);
 	    			curPiece = (TetrisPiece) curPiece.prevRotation();
 	    			curPiece.location = loc;
-	    			
+	    			System.out.println("Rotation from: "+beforeRotationPiece.getThisRotation());
+	    			System.out.println("Rotating to: "+curPiece.getThisRotation());
+
 	    			if (!pieceValid()) {
-	    				// Get rotation of rotated piece
-	    				int rotationNum = curPiece.getThisRotation();
+	    				// Get rotation of non-rotated piece
+	    				int rotationNum = beforeRotationPiece.getThisRotation();
 	    				if (curPiece.getType() == TetrisType.STICK)
 	    					rotationNum += 4;
 	    				Point[] wallKickData = TetrisPiece.wallKickData.get(rotationNum);
@@ -132,9 +137,12 @@ public final class TetrisBoard implements Board {
 		    				loc.x -= p.x;
 		    				loc.y -= p.y;
 		    				// Test wall kick scenario, if not ok reset to original location and try again
-		        			if (pieceValid())
+		        			if (pieceValid()) {
+		        				System.out.println("This point worked: "+p);
 		        				valid = true;
+		        			}
 		    				else {
+		    					System.out.println("This point didn't work: "+p);
 		    					loc.x += p.x;
 		    					loc.y += p.y;
 			        			ind++;
