@@ -18,9 +18,9 @@ public final class TetrisBoard implements Board {
 	private int width;
 	private int height;
 	private int[] rowFillNums;
-	private int maxHeight;
 	private int[] colFillNums;
-	TetrisPiece nextPiece;
+	private int maxHeight;
+	TetrisPiece curPiece;
 	Board.Action lastAction;
 	Board.Result lastResult;
 	private int rowsCleared;
@@ -33,214 +33,152 @@ public final class TetrisBoard implements Board {
     	rowFillNums = new int[height];
     	colFillNums = new int[width];
     	state = new boolean[height][width];
-    	nextPiece = null;
+    	curPiece = null;
     	lastAction = Board.Action.NOTHING;
     	lastResult = Board.Result.NO_PIECE;
     }
 
     @Override
     public Result move(Action act) {
-    	
-    	if (nextPiece == null)
-    		return Result.NO_PIECE;
-    	
-    	Pivot loc = nextPiece.location;
-    	
-    	switch(act) {
-    		case NOTHING:
-    			return Result.SUCCESS;
-    		case DOWN:
-    			loc.y -= 2;
-    			if (pieceValid()) {
-    				loc.y += 1;
-    				return Result.SUCCESS;
-    			}
-				loc.y += 1;
-				place();
-    			return Result.PLACE;
-    		case LEFT:
-    			loc.x -= 1;
-    			if (pieceValid()) {
-    				loc.y -= 1;
-        			if (pieceValid()) {
-        				loc.y += 1;
-        				return Result.SUCCESS;
-        			}
-    				loc.y += 1;
-    				place();
-        			return Result.PLACE;
-    			}
-    			loc.x += 1;
-    			return Result.OUT_BOUNDS;
-    		case RIGHT:
-    			nextPiece.location.x += 1;
-    			if (pieceValid()) {
-    				loc.y -= 1;
-        			if (pieceValid()) {
-        				loc.y += 1;
-        				return Result.SUCCESS;
-        			}
-    				loc.y += 1;
-    				place();
-        			return Result.PLACE;
-    			}
-    			loc.x -= 1;
-    			return Result.OUT_BOUNDS;
-    		case COUNTERCLOCKWISE: {
-    			TetrisPiece currentPiece = nextPiece;
-    			Pivot currentLoc = new Pivot(loc.x, loc.y);
-    			nextPiece = (TetrisPiece) nextPiece.nextRotation();
-    			nextPiece.location = loc;
-    			
-    			if (!pieceValid()) {
-    				// Get rotation of current piece
-    				int thisRotation = currentPiece.getThisRotation();
-    				
-    				if (nextPiece.getType() == TetrisType.STICK)
-    					thisRotation += 4;
-    				
-    				Point[] wallKickData = TetrisPiece.wallKickData.get(thisRotation);
-	    			for (Point p : wallKickData) {
-	    				// Make copy of current location settings
-	    				loc.x += p.x;
-	    				loc.y += p.y;
-	    				
-	    				// Test wall kick scenario, return if it is ok
-	    				nextPiece.location = loc;
-	        			if (pieceValid()) {
-	        				loc.y -= 1;
-	            			if (pieceValid()) {
-	            				loc.y += 1;
-	            				return Result.SUCCESS;
-	            			}
-	            			loc.y += 1;
-	        				place();
-	            			return Result.PLACE;
-	        			}
-	    				// Otherwise, reset to original location and try again with next wall kick data point
-	    				else {
-	    					loc.x -= p.x;
-	    					loc.y -= p.y;
-	    				}
+    	lastAction = act;
+    	lastResult = Result.SUCCESS;
+    	if (curPiece == null)
+    		lastResult = Result.NO_PIECE;
+    	else {    	
+	    	Pivot loc = curPiece.location;
+	    	switch(act) {
+	    		case NOTHING:
+	    			lastResult = Result.SUCCESS;
+	    			break;
+	    		case DOWN:
+	    			loc.y -= 1;
+	    			if (! pieceValid()) {
+						loc.y += 1;
+						place();
+		    			lastResult = Result.PLACE;	    				
 	    			}
-	    			System.out.println("Invalid rotation counterclockwise");
+	    			break;
+	    		case LEFT:
+	    			loc.x -= 1;
+	    			if (! pieceValid()) {
+		    			loc.x += 1;
+		    			lastResult = Result.OUT_BOUNDS;	    				
+	    			}
+	    			break;
+	    		case RIGHT:
+	    			loc.x += 1;
+	    			if (! pieceValid()) {
+		    			loc.x -= 1;
+		    			lastResult = Result.OUT_BOUNDS;
+	    			}
+	    			break;
+	    		case COUNTERCLOCKWISE: {
+	    			TetrisPiece beforeRotationPiece = curPiece;
+	    			Pivot beforeRotationLoc = new Pivot(loc.x, loc.y);
+	    			curPiece = (TetrisPiece) curPiece.nextRotation();
+	    			curPiece.location = loc;
 	    			
-	    			// Reset piece to original state if no wall kicks work
-	    			nextPiece = currentPiece;
-	    			nextPiece.location = currentLoc;
-	    			return Result.OUT_BOUNDS;
-    			}
-    			loc.y -= 1;
-    			if (pieceValid()) {
-    				loc.y += 1;
-    				return Result.SUCCESS;
-    			}
-				loc.y += 1;
-				place();
-    			return Result.PLACE;
-    		}
-    		case CLOCKWISE: {
-    			TetrisPiece currentPiece = nextPiece;
-    			Pivot currentLoc = new Pivot(loc.x, loc.y);
-    			nextPiece = (TetrisPiece) nextPiece.prevRotation();
-    			nextPiece.location = loc;
-    			
-    			if (!pieceValid()) {
-    				// Get rotation of current piece
-    				int thisRotation = (currentPiece.getThisRotation()+3)%4;
-    				
-    				if (nextPiece.getType() == TetrisType.STICK)
-    					thisRotation += 4;
-    				
-    				Point[] wallKickData = TetrisPiece.wallKickData.get(thisRotation);
-	    			for (Point p : wallKickData) {
-	    				// Make copy of current location settings
-	    				loc.x += (-1*p.x);
-	    				loc.y += (-1*p.y);
+	    			if (!pieceValid()) {
+	    				// Get rotation of current piece
+	    				int rotationNum = curPiece.getThisRotation();    				
+	    				if (curPiece.getType() == TetrisType.STICK)
+	    					rotationNum += 4;    				
+	    				Point[] wallKickData = TetrisPiece.wallKickData.get(rotationNum);
 	    				
-	    				// Test wall kick scenario, return if it is ok
-	    				nextPiece.location = loc;
-	        			if (pieceValid()) {
-	        				loc.y -= 1;
-	            			if (pieceValid()) {
-	            				loc.y += 1;
-	            				return Result.SUCCESS;
-	            			}
-	            			loc.y += 1;
-	        				place();
-	            			return Result.PLACE;
-	        			}
-	    				// Otherwise, reset to original location and try again with next wall kick data point
-	    				else {
-	    					loc.x -= p.x;
-	    					loc.y -= p.y;
+	    				// try wall kicks until it works or there are no more wall kicks to try
+	    				boolean valid = false;
+	    				int ind = 0;
+	    				while (!valid && ind < wallKickData.length) {
+	    					Point p = wallKickData[ind];
+		    				// Make copy of current location settings
+		    				loc.x += p.x;
+		    				loc.y += p.y;
+		    				// Test wall kick scenario, if not ok reset to original location and try again
+		        			if (pieceValid()) {
+		        				valid = true;
+		        				System.out.println("This point worked: "+p);
+		        			}
+		    				else {
+		    					System.out.println("This point didn't work: "+p);
+		    					loc.x -= p.x;
+		    					loc.y -= p.y;
+			        			ind++;
+		    				}
 	    				}
+		    			// Reset piece to original state if no wall kicks work
+		    			if (!valid) {
+			    			curPiece = beforeRotationPiece;
+			    			curPiece.location = beforeRotationLoc;
+			    			lastResult = Result.OUT_BOUNDS;
+		    			}
 	    			}
+	    			break;
+	    		}
+	    		case CLOCKWISE: {
+	    			TetrisPiece beforeRotationPiece = curPiece;
+	    			Pivot beforeRotationLoc = new Pivot(loc.x, loc.y);
+	    			curPiece = (TetrisPiece) curPiece.prevRotation();
+	    			curPiece.location = loc;
+	    			System.out.println("Rotation from: "+beforeRotationPiece.getThisRotation());
+	    			System.out.println("Rotating to: "+curPiece.getThisRotation());
 
-	    			// Reset piece to original state if no wall kicks work
-	    			nextPiece = currentPiece;
-	    			nextPiece.location = currentLoc;
-	    			System.out.println(nextPiece.location.x+" "+nextPiece.location.y);
-	    			System.out.println("Invalid rotation clockwise");
-	    			return Result.OUT_BOUNDS;
-    			}
-    			loc.y -= 1;
-    			if (pieceValid()) {
-    				loc.y += 1;
-    				return Result.SUCCESS;
-    			}
-				loc.y += 1;
-				place();
-    			return Result.PLACE;
-    		}
-    		case DROP:
-    			Result r = null;
-    			while(r != Result.PLACE) {
-    				r = move(Action.DOWN);
-    			}
-    			return r;
+	    			if (!pieceValid()) {
+	    				// Get rotation of non-rotated piece
+	    				int rotationNum = beforeRotationPiece.getThisRotation();
+	    				if (curPiece.getType() == TetrisType.STICK)
+	    					rotationNum += 4;
+	    				Point[] wallKickData = TetrisPiece.wallKickData.get(rotationNum);
+	    				
+	    				// try wall kicks until it works or there are no more wall kicks to try
+	    				boolean valid = false;
+	    				int ind = 0;
+	    				while (!valid && ind < wallKickData.length) {
+	    					Point p = wallKickData[ind];
+		    				loc.x -= p.x;
+		    				loc.y -= p.y;
+		    				// Test wall kick scenario, if not ok reset to original location and try again
+		        			if (pieceValid()) {
+		        				System.out.println("This point worked: "+p);
+		        				valid = true;
+		        			}
+		    				else {
+		    					System.out.println("This point didn't work: "+p);
+		    					loc.x += p.x;
+		    					loc.y += p.y;
+			        			ind++;
+		    				}
+		    			}	
+		    			// Reset piece to original state if no wall kicks work
+	    				if (!valid) {
+			    			curPiece = beforeRotationPiece;
+			    			curPiece.location = beforeRotationLoc;
+			    			lastResult = Result.OUT_BOUNDS;
+		    			}
+	    			}
+	    			break;
+	    		}
+	    		case DROP:
+	    			Result r = null;
+	    			while(r != Result.PLACE) {
+	    				r = move(Action.DOWN);
+	    			}
+	    			lastResult = r;
+	    	}
     	}
-    	return Result.SUCCESS;
+    	return lastResult;
     }
-
     @Override
     public Board testMove(Action act) {
-    	//boolean[][] oldState = copy(this.getState());
-    	
-    	Result result = this.move(act);
-    	lastResult = result;
-    	
-    	if (result == Result.SUCCESS || result == Result.PLACE) {
-    		return this;
-    	}
-    	else {
-    		//this.state = oldState;
-        	return null;
-    	}
+    	TetrisBoard duplicate = clone();
+    	duplicate.move(act);
+    	return duplicate;
     }
-    /**
-     * Copy over the state of the current board so we can modify it without fear of making bad changes
-     * @param currentState
-     */
-    private boolean[][] copy(boolean[][] currentState) {
-    	boolean[][] oldState = new boolean[height][width];
-    	for (int r = 0; r < height; r++) {
-    		for (int c = 0; c < width; c++) {
-    			oldState[r][c] = currentState[r][c];
-    		}
-    	}
-    	
-    	return oldState;
-    }
-
-    
     @Override
     public void nextPiece(Piece p) {
-    	nextPiece = (TetrisPiece) p;
-		TetrisPiece.createCircularLL(nextPiece);
-    	nextPiece.initLocation(height, width/2);
+    	curPiece = (TetrisPiece) p;
+		TetrisPiece.createCircularLL(curPiece);
+    	curPiece.initLocation(height, width/2);
     }
-
     @Override
     public boolean equals(Object other) {
     	TetrisBoard otherBoard = (TetrisBoard) other;
@@ -258,67 +196,60 @@ public final class TetrisBoard implements Board {
     	}
     	
     	return true;
-    }
-    
+    }   
     public boolean[][] getState() {
-    	return state;
+    	boolean[][] cloneState = new boolean[height][];
+    	for (int i=0; i<state.length; i++)
+    		cloneState[i] = state[i].clone();
+    	return cloneState;
     }
-
     @Override
     public Result getLastResult() { 
     	return lastResult; 
     }
-
     @Override
     public Action getLastAction() { 
     	return lastAction; 
     }
-
     @Override
     public int getRowsCleared() { 
     	return -1; 
     }
-
     @Override
     public int getWidth() { 
     	return width; 
     }
-
     @Override
     public int getHeight() {
     	return height;
     }
-
     @Override
     public int getMaxHeight() {
     	return maxHeight;
     }
-
     @Override
     public int dropHeight(Piece piece, int x) {
+    	//TODO implement
     	return -1;
     }
-
     @Override
     public int getColumnHeight(int x) {
     	return colFillNums[x];
     }
-
     @Override
     public int getRowWidth(int y) {
     	return rowFillNums[y];
     }
-
     @Override
     public boolean getGrid(int x, int y) {
     	if (!valid(x, y))
     		return true;
-    	if (nextPiece != null) {
-	    	Point[] piece = nextPiece.getBody();
-	    	Pivot center = nextPiece.getPivot();
+    	if (curPiece != null) {
+	    	Point[] piece = curPiece.getBody();
+	    	Pivot center = curPiece.getPivot();
 	    	for (Point p : piece) {
-	    		int px = (int) (p.x - center.x + nextPiece.location.x);
-	    		int py = (int) (p.y - center.y + nextPiece.location.y);
+	    		int px = (int) (p.x - center.x + curPiece.location.x);
+	    		int py = (int) (p.y - center.y + curPiece.location.y);
 	    		if (px == x && py == y)
 	    			return true;
 	    	}
@@ -326,6 +257,27 @@ public final class TetrisBoard implements Board {
     	return state[yToRow(y)][xToCol(x)];
     }
     
+    public String toString() {
+    	String result = "Board:\n";
+    	for (boolean[] row : state) {
+    		for (boolean b : row)
+    			result += b ? "# " : "  ";
+    		result += "\n";
+    	}
+    	return result;
+    }
+    public TetrisBoard clone() {
+    	TetrisBoard clone = new TetrisBoard(width, height);
+    	clone.state = getState();
+    	clone.rowFillNums = rowFillNums.clone();
+    	clone.colFillNums = colFillNums.clone();
+    	clone.maxHeight = maxHeight;
+    	clone.curPiece = curPiece.clone();
+    	clone.lastAction = lastAction;
+    	clone.lastResult = lastResult;
+    	clone.rowsCleared = rowsCleared;
+    	return clone;
+    }
     public boolean valid(int x, int y) {
     	return x >= 0 && x < width && y >=0 && y < height;
     }
@@ -336,9 +288,9 @@ public final class TetrisBoard implements Board {
     	return height - y - 1;
     }
     private boolean pieceValid() {
-    	Pivot loc = nextPiece.location;
-    	Pivot center = nextPiece.getPivot();
-    	Point[] piece = nextPiece.getBody();
+    	Pivot loc = curPiece.location;
+    	Pivot center = curPiece.getPivot();
+    	Point[] piece = curPiece.getBody();
     	for (Point p : piece) {
     		int x = (int) (p.x - center.x + loc.x);
     		int y = (int) (p.y - center.y + loc.y);
@@ -348,15 +300,15 @@ public final class TetrisBoard implements Board {
     	return true;
     }
     private void place() {
-    	Point[] piece = nextPiece.getBody();
-    	Pivot center = nextPiece.getPivot();
+    	Point[] piece = curPiece.getBody();
+    	Pivot center = curPiece.getPivot();
     	for (Point p : piece) {
-    		int x = (int) (p.x - center.x + nextPiece.location.x);
-    		int y = (int) (p.y - center.y + nextPiece.location.y);
+    		int x = (int) (p.x - center.x + curPiece.location.x);
+    		int y = (int) (p.y - center.y + curPiece.location.y);
     		//System.out.println(x+" "+y);
     		state[yToRow(y)][xToCol(x)] = true;
     	}
-    	nextPiece = null;
+    	curPiece = null;
     	
     	ArrayList<Integer> filledRows = new ArrayList<Integer>();
     	for(int y=0; y<height; y++) {
@@ -394,6 +346,5 @@ public final class TetrisBoard implements Board {
     		colFillNums[x] = max;
     		maxHeight = Math.max(max, maxHeight);
     	}
-		System.out.println();
     }
 }
