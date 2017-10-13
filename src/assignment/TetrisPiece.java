@@ -294,7 +294,31 @@ public final class TetrisPiece extends Piece {
     public TetrisPiece clone() {
     	TetrisPiece clone = new TetrisPiece(body.clone());
     	clone.location = new Pivot(location.x, location.y);
-    	TetrisPiece.createCircularLL(clone);
+    	clone.thisRotation = thisRotation;
+    	clone.center = new Pivot(center.x, center.y);
+
+		TetrisPiece t2 = new TetrisPiece(rotate(clone.getBody()), false);
+		Pivot c2 = new Pivot(center.x, center.y);
+		rotate(c2);
+		t2.center = c2;
+		t2.thisRotation = (thisRotation + 1) % 4;
+		
+		TetrisPiece t3 = new TetrisPiece(rotate(t2.getBody()), false);
+		Pivot c3 = new Pivot(t2.center.x, t2.center.y);
+		rotate(c3);
+		t3.center = c3;
+		t3.thisRotation = (thisRotation + 2) % 4;
+		
+		TetrisPiece t4 = new TetrisPiece(rotate(t3.getBody()), false);
+		Pivot c4 = new Pivot(t3.center.x, t3.center.y);
+		rotate(c4);
+		t4.center = c4;
+		t4.thisRotation = (thisRotation + 3) % 4;
+		
+		clone.next = t2;
+		t2.next = t3;
+		t3.next = t4;
+		t4.next = clone;
     	return clone;
     }
 }
