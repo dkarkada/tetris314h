@@ -9,4 +9,11 @@ public class Pivot {
 	}
 	public double getX() {return x;}
 	public double getY() {return y;}
+	public boolean equals(Object o) {
+		if (o instanceof Pivot) {
+			Pivot p = (Pivot) o;
+			return p.x == x && p.y == y;
+		}
+		return false;
+	}
 }
