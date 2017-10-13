@@ -211,6 +211,8 @@ public final class TetrisPiece extends Piece {
 		width = maxX + 1;
 		height = maxY + 1;
 		calcSkirt(width);
+		
+		createCircularLL(this);
 	}
 	
 	public TetrisPiece(Point[] points, boolean createLinkedList) {
