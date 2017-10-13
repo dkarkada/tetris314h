@@ -172,8 +172,13 @@ public final class TetrisBoard implements Board {
     @Override
     public void nextPiece(Piece p) {
     	curPiece = (TetrisPiece) p;
-		TetrisPiece.createCircularLL(curPiece);
-    	curPiece.initLocation(height, width/2);
+    	if (curPiece != null && curPiece.getBody() != null) {
+    		TetrisPiece.createCircularLL(curPiece);
+        	curPiece.initLocation(height, width/2);
+    	}
+    	else {
+    		System.out.println("Null piece passed to board.");
+    	}
     }
     @Override
     public boolean equals(Object other) {
@@ -208,7 +213,7 @@ public final class TetrisBoard implements Board {
     }
     @Override
     public int getRowsCleared() { 
-    	return -1; 
+    	return rowsCleared; 
     }
     @Override
     public int getWidth() { 

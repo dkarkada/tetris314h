@@ -2,6 +2,7 @@ package assignment;
 
 import java.awt.*;
 import java.util.*;
+import java.util.regex.*;
 
 /**
  * An immutable representation of a tetris piece in a particular rotation.
@@ -80,7 +81,22 @@ public final class TetrisPiece extends Piece {
      */
 
     public static Piece getPiece(String pieceString) {
-    	return new TetrisPiece(Piece.parsePoints(pieceString));
+    	if (validatePieceString(pieceString)) {
+    		return new TetrisPiece(Piece.parsePoints(pieceString));
+    	}
+    	else {
+    		System.err.println("Invalid piece string: "+pieceString);
+    		return null;
+    	}
+    }
+    
+    public static boolean validatePieceString(String str) {
+    	str = str.trim();
+    	if (str.matches("^(\\d +)+\\d$") && str.split(" +").length == 8) {
+    		return true;
+    	}
+    	
+    	return false;
     }
     
 	public static void createCircularLL(TetrisPiece t1) {
@@ -289,6 +305,10 @@ public final class TetrisPiece extends Piece {
     
     public String toString() {
     	return Arrays.toString(body);
+    }
+    
+    public Pivot getLocation() {
+    	return location;
     }
     
     public TetrisPiece clone() {
