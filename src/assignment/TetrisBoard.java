@@ -176,14 +176,13 @@ public final class TetrisBoard implements Board {
     @Override
     public boolean equals(Object other) {
     	TetrisBoard otherBoard = (TetrisBoard) other;
-    	boolean[][] otherBoardState = otherBoard.getState();
     	
-    	for (int r = 0; r < height; r++) {
-    		for (int c = 0; c < width; c++) {
-    			if (!valid(r,c) || !(otherBoard.valid(r,c))) {
+    	for (int y = 0; y < height; y++) {
+    		for (int x = 0; x < width; x++) {
+    			if (!valid(x,y) || !(otherBoard.valid(x,y))) {
     				return false;
     			}
-    			else if (state[r][c] != otherBoardState[r][c]) {
+    			else if (getGrid(x,y) != otherBoard.getGrid(x,y)) {
     				return false;
     			}
     		}
@@ -223,8 +222,25 @@ public final class TetrisBoard implements Board {
     }
     @Override
     public int dropHeight(Piece piece, int x) {
-    	//TODO implement
-    	return -1;
+    	TetrisPiece droppingPiece = (TetrisPiece) piece;
+    	TetrisPiece.createCircularLL(droppingPiece);
+    	droppingPiece.initLocation(height, width/2);
+    	droppingPiece.location.x += x;
+    	
+    	curPiece = droppingPiece;
+    	TetrisBoard duplicate = clone();
+    	
+    	
+    	Result result = duplicate.move(Action.DOWN);
+    	int height = -1;
+    	if (result == Result.PLACE) {
+    		height = (int) curPiece.location.y;
+    	}
+    	
+    	// reset curPiece
+    	curPiece = null;
+    	
+    	return height;
     }
     @Override
     public int getColumnHeight(int x) {
@@ -296,13 +312,30 @@ public final class TetrisBoard implements Board {
     	}
     	return true;
     }
+    
+    private boolean pieceValid(TetrisPiece piece) {
+    	Pivot loc = piece.location;
+    	Pivot center = piece.getPivot();
+    	Point[] body = curPiece.getBody();
+    	for (Point p : body) {
+    		int x = (int) (p.x - center.x + loc.x);
+    		int y = (int) (p.y - center.y + loc.y);
+    		if(!valid(x,y) || state[yToRow(y)][xToCol(x)])
+    			return false;
+    	}
+    	return true;
+    }
     private void place() {
     	Point[] piece = curPiece.getBody();
     	Pivot center = curPiece.getPivot();
     	for (Point p : piece) {
     		int x = (int) (p.x - center.x + curPiece.location.x);
     		int y = (int) (p.y - center.y + curPiece.location.y);
-    		//System.out.println(x+" "+y);
+    		System.out.println(curPiece.location.x+" "+curPiece.location.y);
+    		System.out.println(curPiece.getPivot().x+" "+curPiece.getPivot().y);
+    		System.out.println(xToCol(x)+" "+yToRow(y));
+    		System.out.println(x+" "+y+"\n");
+    		
     		state[yToRow(y)][xToCol(x)] = true;
     	}
     	curPiece = null;
