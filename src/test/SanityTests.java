@@ -102,7 +102,6 @@ public class SanityTests {
 
         // We should be able to gauge the drop height of a piece on an empty board.
         Piece piece = TetrisPiece.getPiece(stickPiece);
-        System.out.println(board.dropHeight(piece, JTetris.WIDTH/2));
         assertEquals(0, board.dropHeight(piece, JTetris.WIDTH / 2));
 
         // We should be able to give the board a piece.
@@ -116,7 +115,7 @@ public class SanityTests {
         assertNotEquals(board, board2);
 
         // The new board should have the resulting action, but the old
-        // board should not (as it is completely seperate).
+        // board should not (as it is completely separate).
         assertEquals(Board.Result.SUCCESS, board2.getLastResult());
         assertEquals(Board.Action.LEFT, board2.getLastAction());
         assertEquals(Board.Action.DOWN, board.getLastAction());
