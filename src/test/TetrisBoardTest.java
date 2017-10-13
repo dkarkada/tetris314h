@@ -12,7 +12,7 @@ public class TetrisBoardTest {
 	
 	@BeforeClass
 	public static void initBoard() {
-		testBoard = new TetrisBoard(10,20);
+		testBoard = new TetrisBoard(20,10);
 	}
 	
 	@Test
@@ -21,12 +21,12 @@ public class TetrisBoardTest {
 		assertFalse(testBoard.valid(20, 10));
 		
 		assertTrue(testBoard.valid(0, 0));
-		assertTrue(testBoard.valid(19, 9));
+		assertFalse(testBoard.valid(19, 9));
 	}
 	
 	@Test
 	public void equalsTest() {
-		TetrisBoard otherBoard = new TetrisBoard(10,20);
+		TetrisBoard otherBoard = new TetrisBoard(20,10);
 		assertTrue("failed assertTrue", testBoard.equals(otherBoard));
 	}
 

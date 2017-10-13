@@ -32,6 +32,17 @@ public class LessLameBrain implements Brain{
 		PieceState p = new PieceState(loc, rot, parent);
 		return true;
 	}
+	
+	private int countHolesInBoard(TetrisBoard b) {
+		int count = 0;
+		for (int i = 0; i < b.getHeight(); i++) {
+			for (int j = 0; j < b.getWidth(); j++) {
+				
+			}
+		}
+		
+		return 0;
+	}
 }
 
 class PieceState{

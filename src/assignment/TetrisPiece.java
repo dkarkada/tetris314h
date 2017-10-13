@@ -84,9 +84,9 @@ public final class TetrisPiece extends Piece {
     }
     
 	public static void createCircularLL(TetrisPiece t1) {
-		TetrisPiece t2 = new TetrisPiece(rotate(t1.getBody()));
-		TetrisPiece t3 = new TetrisPiece(rotate(t2.getBody()));
-		TetrisPiece t4 = new TetrisPiece(rotate(t3.getBody()));
+		TetrisPiece t2 = new TetrisPiece(rotate(t1.getBody()), false);
+		TetrisPiece t3 = new TetrisPiece(rotate(t2.getBody()), false);
+		TetrisPiece t4 = new TetrisPiece(rotate(t3.getBody()), false);
 		t1.next = t2;
 		t2.next = t3;
 		t3.next = t4;
@@ -212,6 +212,21 @@ public final class TetrisPiece extends Piece {
 		height = maxY + 1;
 		calcSkirt(width);
 	}
+	
+	public TetrisPiece(Point[] points, boolean createLinkedList) {
+		body = points;
+		int maxX = Integer.MIN_VALUE;
+		int maxY = Integer.MIN_VALUE;
+		
+		for (Point p : body) {
+			maxX = Math.max(maxX, p.x);
+			maxY = Math.max(maxY, p.y);
+		}
+		
+		width = maxX + 1;
+		height = maxY + 1;
+		calcSkirt(width);
+	}
     
     public TetrisType getType() {
     	return type;
@@ -239,7 +254,6 @@ public final class TetrisPiece extends Piece {
     }
     
     public void initLocation(int topEdgeHeight, int midAlignWidth) {
-    	double topBuffer = height - center.y;
     	double y = topEdgeHeight - height + center.y;
     	double x = midAlignWidth + center.x - width/2;
     	location = new Pivot(x, y);
