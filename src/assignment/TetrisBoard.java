@@ -287,12 +287,21 @@ public final class TetrisBoard implements Board {
     	return state[yToRow(y)][xToCol(x)];
     }
     
+	public int getColumnFill(int x) {
+	    	int count = 0;
+	    	for (int y=0; y<height; y++) {
+	    		if (state[yToRow(y)][xToCol(x)])
+	    			count++;
+	   	}
+	    	return count;
+    }
+    
     public String toString() {
     	String result = "Board:\n";
-    	for (boolean[] row : state) {
-    		for (boolean b : row)
-    			result += b ? "# " : "  ";
-    		result += "\n";
+	  	for (int y = height - 1; y>=0; y--) {
+    		for (int x = 0; x < width; x++)
+   			result += getGrid(x, y) ? "# " : "  ";
+     		result += "\n";
     	}
     	return result;
     }

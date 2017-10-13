@@ -92,6 +92,8 @@ public final class TetrisPiece extends Piece {
     
     public static boolean validatePieceString(String str) {
     	str = str.trim();
+    	// Matches groups of single digits followed by one or more spaces
+    	// The whole string also has to end in a digit
     	if (str.matches("^(\\d +)+\\d$") && str.split(" +").length == 8) {
     		return true;
     	}
