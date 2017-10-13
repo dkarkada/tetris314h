@@ -331,12 +331,13 @@ public final class TetrisBoard implements Board {
     	for (Point p : piece) {
     		int x = (int) (p.x - center.x + curPiece.location.x);
     		int y = (int) (p.y - center.y + curPiece.location.y);
-    		System.out.println(curPiece.location.x+" "+curPiece.location.y);
-    		System.out.println(curPiece.getPivot().x+" "+curPiece.getPivot().y);
-    		System.out.println(xToCol(x)+" "+yToRow(y));
-    		System.out.println(x+" "+y+"\n");
     		
+    		try {
     		state[yToRow(y)][xToCol(x)] = true;
+    		}catch(Exception e) {
+    			e.printStackTrace();
+    			throw e;
+    		}
     	}
     	curPiece = null;
     	
