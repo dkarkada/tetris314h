@@ -48,6 +48,8 @@ public final class TetrisBoard implements Board {
 
     @Override
     public Result move(Action act) {
+    	if (act==null)
+    		throw new IllegalArgumentException();
     	lastAction = act;
     	lastResult = Result.SUCCESS;
     	if (curPiece == null)
@@ -266,6 +268,14 @@ public final class TetrisBoard implements Board {
     public int getColumnHeight(int x) {
     	return colFillNums[x];
     }
+    public int getColumnFill(int x) {
+    	int count = 0;
+    	for (int y=0; y<height; y++) {
+    		if (state[yToRow(y)][xToCol(x)])
+    			count++;
+    	}
+    	return count;
+    }
     @Override
     public int getRowWidth(int y) {
     	return rowFillNums[y];
@@ -286,16 +296,11 @@ public final class TetrisBoard implements Board {
     	}
     	return state[yToRow(y)][xToCol(x)];
     }
-    
-	public int getColumnFill(int x) {
-	    	int count = 0;
-	    	for (int y=0; y<height; y++) {
-	    		if (state[yToRow(y)][xToCol(x)])
-	    			count++;
-	   	}
-	    	return count;
+    public void setPieceParams(Pivot location, int rotationNum) {
+    	while (curPiece.getThisRotation() != rotationNum)
+    		curPiece = (TetrisPiece) curPiece.next;
+    	curPiece.location = location;
     }
-    
     public String toString() {
     	String result = "Board:\n";
 	  	for (int y = height - 1; y>=0; y--) {
@@ -341,8 +346,7 @@ public final class TetrisBoard implements Board {
     	}
     	return true;
     }
-    
-    private void place() {
+    public void place() {
     	Point[] piece = curPiece.getBody();
     	Pivot center = curPiece.getPivot();
     	for (Point p : piece) {
