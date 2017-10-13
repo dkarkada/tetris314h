@@ -50,17 +50,17 @@ public final class TetrisPiece extends Piece {
 				TetrisType.T);
 		
 		String[] wallKickStrings = {
+				"1 0  1 -1  0 2  1 2", // R>0
 				"1 0  1 1  0 -2  1 -2", // 0>L
 				"-1 0  -1 -1  0 2  -1 2", // L>2
-				"-1 0  -1 1  0 -2  -1 -2", // 2>R
-				"1 0  1 -1  0 2  1 2" // R>0
+				"-1 0  -1 1  0 -2  -1 -2" // 2>R
 		};
 		
 		String[] wallKickStringsStick = {
+				"2 0  -1 0  2 1  -1 -2", // R>0
 				"-1 0  2 0  -1 2  2 -1", // 0>L
 				"-2 0  1 0  -2 -1  1 2", // L>2
-				"1 0  -2 0  1 -2  -2 1", // 2>R
-				"2 0  -1 0  2 1  -1 -2" // R>0
+				"1 0  -2 0  1 -2  -2 1" // 2>R
 		};
 		
 		wallKickData = new ArrayList<Point[]>();
@@ -195,7 +195,6 @@ public final class TetrisPiece extends Piece {
 	private int width;
 	private Point[] body;
 	private int[] skirt;
-	private boolean spawnState;
 	public int thisRotation;
 	public Pivot location;
 	
@@ -209,7 +208,6 @@ public final class TetrisPiece extends Piece {
 			maxY = Math.max(maxY, p.y);
 		}
 		
-		spawnState = false;
 		width = maxX + 1;
 		height = maxY + 1;
 		calcSkirt(width);
@@ -269,15 +267,18 @@ public final class TetrisPiece extends Piece {
     	}
     }
     
-    public boolean isSpawnState() {
-    	return spawnState;
-    }
-    
     public int getThisRotation() {
     	return thisRotation;
     }
     
     public String toString() {
     	return Arrays.toString(body);
+    }
+    
+    public TetrisPiece clone() {
+    	TetrisPiece clone = new TetrisPiece(body.clone());
+    	clone.location = new Pivot(location.x, location.y);
+    	TetrisPiece.createCircularLL(clone);
+    	return clone;
     }
 }
