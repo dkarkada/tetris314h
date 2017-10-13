@@ -21,6 +21,7 @@ public final class TetrisBoard implements Board {
 	private int[] colFillNums;
 	private int maxHeight;
 	TetrisPiece curPiece;
+	TetrisPiece lastPlacedPiece;
 	Board.Action lastAction;
 	Board.Result lastResult;
 	private int rowsCleared;
@@ -36,6 +37,7 @@ public final class TetrisBoard implements Board {
     	curPiece = null;
     	lastAction = Board.Action.NOTHING;
     	lastResult = Board.Result.NO_PIECE;
+    	lastPlacedPiece = null;
     }
 
     @Override
@@ -224,22 +226,29 @@ public final class TetrisBoard implements Board {
     public int dropHeight(Piece piece, int x) {
     	TetrisPiece droppingPiece = (TetrisPiece) piece;
     	TetrisPiece.createCircularLL(droppingPiece);
-    	droppingPiece.initLocation(height, width/2);
-    	droppingPiece.location.x += x;
+    	droppingPiece.initLocation(height, x);
     	
+    	TetrisPiece temp = null;
+    	if (curPiece != null) {
+    		temp = curPiece.clone();
+    	}
     	curPiece = droppingPiece;
-    	TetrisBoard duplicate = clone();
     	
+    	TetrisBoard boardAfterDrop = (TetrisBoard) testMove(Action.DROP);
+    	Result result = boardAfterDrop.getLastResult();
+    	curPiece = boardAfterDrop.lastPlacedPiece;
     	
-    	Result result = duplicate.move(Action.DOWN);
     	int height = -1;
     	if (result == Result.PLACE) {
-    		height = (int) curPiece.location.y;
+    		System.out.println(result);
+    		System.out.println(curPiece.location.y);
+    		height = (int) Math.ceil(curPiece.location.y);
     	}
     	
     	// reset curPiece
-    	curPiece = null;
+    	curPiece = temp;
     	
+    	//System.out.println(yToRow(height));
     	return height;
     }
     @Override
@@ -313,18 +322,6 @@ public final class TetrisBoard implements Board {
     	return true;
     }
     
-    private boolean pieceValid(TetrisPiece piece) {
-    	Pivot loc = piece.location;
-    	Pivot center = piece.getPivot();
-    	Point[] body = curPiece.getBody();
-    	for (Point p : body) {
-    		int x = (int) (p.x - center.x + loc.x);
-    		int y = (int) (p.y - center.y + loc.y);
-    		if(!valid(x,y) || state[yToRow(y)][xToCol(x)])
-    			return false;
-    	}
-    	return true;
-    }
     private void place() {
     	Point[] piece = curPiece.getBody();
     	Pivot center = curPiece.getPivot();
@@ -339,6 +336,7 @@ public final class TetrisBoard implements Board {
     			throw e;
     		}
     	}
+    	lastPlacedPiece = curPiece.clone();
     	curPiece = null;
     	
     	ArrayList<Integer> filledRows = new ArrayList<Integer>();
