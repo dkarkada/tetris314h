@@ -270,6 +270,9 @@ public final class TetrisBoard implements Board {
     	clone.rowsCleared = rowsCleared;
     	return clone;
     }
+    public TetrisPiece getPiece() {
+    	return curPiece;
+    }
     public boolean valid(int x, int y) {
     	return x >= 0 && x < width && y >=0 && y < height;
     }

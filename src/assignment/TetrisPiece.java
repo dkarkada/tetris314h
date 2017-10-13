@@ -195,8 +195,8 @@ public final class TetrisPiece extends Piece {
 	private int width;
 	private Point[] body;
 	private int[] skirt;
-	public int thisRotation;
-	public Pivot location;
+	private int thisRotation;
+	Pivot location;
 	
 	public TetrisPiece(Point[] points) {
 		body = points;
