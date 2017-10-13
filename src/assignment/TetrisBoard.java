@@ -29,6 +29,12 @@ public final class TetrisBoard implements Board {
 	
     // JTetris will use this constructor
     public TetrisBoard(int w, int h) {
+    	if (w < 4) {
+    		throw new IllegalArgumentException("Width must be greater than 4");
+    	}
+    	if (h < 4) {
+    		throw new IllegalArgumentException("Height must be greater than 4");
+    	}
     	width = w;
     	height = h;
     	rowFillNums = new int[height];
