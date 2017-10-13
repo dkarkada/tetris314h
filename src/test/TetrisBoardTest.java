@@ -30,6 +30,22 @@ public class TetrisBoardTest {
 	}
 	
 	@Test
+	public void constructorTest() {
+		// Make sure we can't make board that are too small
+		try {
+			TetrisBoard b = new TetrisBoard(2,2);
+		} catch(Exception e) {
+			System.err.println("Invalid arguments");
+		}
+		
+		try {
+			TetrisBoard b = new TetrisBoard(-1,-2);
+		} catch(Exception e) {
+			System.err.println("Invalid arguments");
+		}
+	}
+	
+	@Test
 	public void validTest() {
 		// Out of bounds locations should fail test
 		assertFalse(testBoard.valid(-10, 20));
